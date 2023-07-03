@@ -92,6 +92,9 @@ def step_impl(context, MODE):
     
 @step("Krok testowy")
 def step_impl(context):
-    context.connections[context.connected_device.index("Multimeter_Rigol")].write('CONFigure:VOLTage:DC ')
+    load = commands.LoadCommand()
+    print(load.SetFunction("CURRent"))
+    print(load.MeasureVoltage("DC"))
+    # context.connections[context.connected_device.index("Multimeter_Rigol")].write('CONFigure:VOLTage:DC ')
     # DC_value = context.connections[context.connected_device.index("Multimeter_Rigol")].read()
     # print(DC_value)    

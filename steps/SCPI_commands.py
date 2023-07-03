@@ -95,3 +95,49 @@ CHROMA_61511 = {
     # FUNCTION
     "FShape" : "FUNCtion:SHAPe:A", #This command specifies the waveform buffer A for use.
 }
+
+ITECH_IT8600 = {
+    # INPUT
+    "InputOn": ":SOURce:INPut:STATe ON",
+    "InputOff": ":SOURce:INPut:STATe OFF",
+    # SET LOOP
+    "SetLoopCC": ":SOURce:LOOP:MODE CC",
+    "SetLoopCR": ":SOURce:LOOP:MODE CR",
+    "SetLoopCP": ":SOURce:LOOP:MODE CP",
+    # QUERY LOOP
+    "WhichLoop": ":SOURce:LOOP:MODE?",
+    # SET FUNCTION
+    "SetFunctionConstCurrent": ":SOURce:FUNCtion CURRent",
+    "SetFunctionConstResistance": ":SOURce:FUNCtion RESistance",
+    "SetFunctionConstCPOWer": ":SOURce:FUNCtion POWer",
+    "SetResistanceValue": ":SOURce:RESistance:LEVel",
+    "SetPowerValue": ":SOURce:POWer:LEVel",
+    "SetCurrentValue": ":SOURce:CURRent:LEVel",
+    "SetVoltageValue": ":SOURce:VOLTage:LEVel"
+}
+
+class ScpiCommand:
+    
+    def __init__(self):
+        self.command = None
+    
+    def MeasureVoltage(self, variant):
+        #Method queries the current measured DC or AC voltage value.
+        command = f":MEASure:VOLTage:{variant}?"
+        return command
+    
+    def MeasureCurrent(self, variant):
+        #Method queries the current measured DC or AC current value.
+        command = f":MEASure:CURRent:{variant}?"
+        return command
+    
+    def MeasureResistance(self):
+        #Method queries the measured 2-wire resistance value.
+        command = ":MEASure:RESistance?"
+        return command
+    
+class LoadCommand(ScpiCommand):
+    
+    def SetFunction(self, function):
+        command = f":SOURce:FUNCtion {function}"
+        return command
