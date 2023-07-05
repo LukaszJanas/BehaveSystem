@@ -92,9 +92,11 @@ def step_impl(context, MODE):
     
 @step("Krok testowy")
 def step_impl(context):
-    load = commands.LoadCommand()
-    print(load.SetFunction("CURRent"))
+    load = commands.ITECH_IT8600(usePrefix=True)
+    print(load.SetFunction("Resistance"))
     print(load.MeasureVoltage("DC"))
+    print(load.SetParamLevel("Current", 100))
+    print(load.SetInput("On"))
     # context.connections[context.connected_device.index("Multimeter_Rigol")].write('CONFigure:VOLTage:DC ')
     # DC_value = context.connections[context.connected_device.index("Multimeter_Rigol")].read()
     # print(DC_value)    

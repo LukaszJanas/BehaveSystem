@@ -53,6 +53,13 @@ RIGOL_DM3068_2W_resistance_range = {
     "100e+6":  6   #2 - Range = 100 MOhm
 }
 
+CHROMA_61511_current_range = {
+    "8" : 1,
+    "32" : 2,
+    "128" : 3,
+    "AUTO" : "Auto",
+}
+
 RIGOL_DM3068 = {
     # MEASURE query
     "VDC": ":MEASure:VOLTage:DC?",  #The command queries the current measured DC voltage value.
@@ -92,8 +99,14 @@ CHROMA_61511 = {
     "SetAmplVAC" : "VOLTage:AMPLitude:AC", #This command sets the AC amplitude output voltage in Volts
     "SetVDC" : "VOLTage:LEVel:AC", #This command sets the DC level output voltage in Volts
     "SetAmplVDC" : "VOLTage:AMPLitude:DC", #This command sets the DC amplitude output voltage in Volts
+    "SetCurrentRange" : "CURRent:RANGe", #This command sets the current measurement range for output
     # FUNCTION
     "FShape" : "FUNCtion:SHAPe:A", #This command specifies the waveform buffer A for use.
+    "InstrumentEdit" : "INSTrument:EDIT", #Select ALL or EACH phases to programm
+    "InstrumentCouple" : "INSTrument:COUPle", #Programm all phases or single one
+    "InstrumentProgrammPhase": "INSTrument:NSELect", #Set individual output for subsequent commands
+    "InstrumentProgrammPhase2": "INSTrument:SELect", #Set individual output for subsequent commands
+    "InstrumentPhase": "INSTrument:PHASe" #It switches between single phase and three-phase mode
 }
 
 ITECH_IT8600 = {
@@ -116,28 +129,58 @@ ITECH_IT8600 = {
     "SetVoltageValue": ":SOURce:VOLTage:LEVel"
 }
 
+def AddPrefixIfNeeded(command, prefix):
+    return ":"+command if prefix else command
+
+
 class ScpiCommand:
     
-    def __init__(self):
-        self.command = None
+    def __init__(self, usePrefix = True):
+        self.usePrefix = usePrefix
     
     def MeasureVoltage(self, variant):
         #Method queries the current measured DC or AC voltage value.
-        command = f":MEASure:VOLTage:{variant}?"
-        return command
+        return AddPrefixIfNeeded(f"MEASure:VOLTage:{variant}?", self.usePrefix)
     
     def MeasureCurrent(self, variant):
         #Method queries the current measured DC or AC current value.
-        command = f":MEASure:CURRent:{variant}?"
-        return command
+        return AddPrefixIfNeeded(f"MEASure:CURRent:{variant}?", self.usePrefix)
     
     def MeasureResistance(self):
-        #Method queries the measured 2-wire resistance value.
-        command = ":MEASure:RESistance?"
-        return command
+        #Method queries the measured 2-wire resistance value. 
+        return AddPrefixIfNeeded("MEASure:RESistance?", self.usePrefix)
     
-class LoadCommand(ScpiCommand):
+class ITECH_IT8600(ScpiCommand):
+    
+    def __init__(self, usePrefix):
+        super().__init__(usePrefix)
+        
+        self.PARAM = {
+            "Current" : "CURRent",
+            "Resistance" : "RESistance",
+            "Power" : "POWer",
+            "Voltage": "VOLTage"
+        }
+        
+        self.STATE = {
+            "On" : "ON",
+            "Off": "OFF"
+        }
+        
+        self.MODE = {
+            "ConstantCurrent" : "CC",
+            "ConstantPower": "CP",
+            "ConstantResistance": "CR"
+        }
     
     def SetFunction(self, function):
-        command = f":SOURce:FUNCtion {function}"
-        return command
+        return f":SOURce:FUNCtion {self.PARAM.get(function, 'CURRent')}"
+    
+    def SetInput(self, state):
+        return f":SOURce:FUNCtion {self.STATE.get(state, 'OFF')}"
+    
+    def SetLoop(self, mode):
+        return f":SOURce:FUNCtion {self.MODE.get(mode, 'OFF')}"
+    
+    def SetParamLevel(self, param, level):
+        return f":SOURce:{self.PARAM.get(param, 'CURRent')}:LEVel {str(level)}"
