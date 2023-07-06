@@ -12,7 +12,7 @@ import device_configuration as dev_con
 
 def before_scenario(context, scenario):
     context.rm = visa.ResourceManager()
-    context.connections, context.connected_device = communication.devices_connect(context.rm, dev_con.Devices)
+    context.connections, context.connected_device, context.device_class = communication.devices_connect(context.rm, dev_con.Devices)
     
 def after_scenario(context, scenario):
     communication.devices_disconnect(context.connections)

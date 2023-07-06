@@ -1,7 +1,9 @@
+import SCPI_commands as command
 # connect all devices declared in dictionary
 def devices_connect(resource_manager, device_dict):
     connections = []
     connected_device = []
+    device_class = []
     for i in device_dict:
         if device_dict[i] is not None:
             try:
@@ -12,8 +14,9 @@ def devices_connect(resource_manager, device_dict):
             
             connections.append(inst)
             connected_device.append(i)
+            device_class.append(command.ClassCreator(i))
 
-    return connections, connected_device
+    return connections, connected_device, device_class
 
 # disconnect all devices declared in dictionary
 def devices_disconnect(connections):

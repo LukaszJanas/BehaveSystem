@@ -184,3 +184,7 @@ class ITECH_IT8600(ScpiCommand):
     
     def SetParamLevel(self, param, level):
         return f":SOURce:{self.PARAM.get(param, 'CURRent')}:LEVel {str(level)}"
+
+def ClassCreator(object_name):
+    if object_name == "ITECH_IT8600":
+        return ITECH_IT8600(usePrefix = True)

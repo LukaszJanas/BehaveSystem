@@ -6,6 +6,16 @@ import communication
 import time
 import tools
 
+def get_device_index(context, name):
+    return context.connected_device.index(name)
+
+def command(context, name):
+    return context.device_class[get_device_index(context, name)]
+
+def write_msg(context, device_name, command):
+    # context.connections[get_device_index(context, device_name)].write(command)
+    print(command)
+
 @step("Ustaw odczyt napięcia stałego dla urządzenia {device}")
 def step_impl(context, device):
     if device == 'Miernik Rigol':
@@ -88,15 +98,19 @@ def step_impl(context, MODE):
     MANU - means that user should set the range and resolution for current measurement
 
     """
-    context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["CfgMeasType"]+f" {MODE}")
+    # context.connections[device(context, "Multimeter_Rigol")].write(context.connected_device["Multimeter_Rigol"].MeasureVoltage("DC"))
     
 @step("Krok testowy")
 def step_impl(context):
-    load = commands.ITECH_IT8600(usePrefix=True)
-    print(load.SetFunction("Resistance"))
-    print(load.MeasureVoltage("DC"))
-    print(load.SetParamLevel("Current", 100))
-    print(load.SetInput("On"))
+    write_msg(context, "ITECH_IT8600", command(context, "ITECH_IT8600").SetParamLevel("Current", 100))
+    write_msg(context, "ITECH_IT8600", command(context, "ITECH_IT8600").MeasureVoltage("DC"))
+    write_msg(context, "ITECH_IT8600", command(context, "ITECH_IT8600").SetInput("On"))
+    write_msg(context, "ITECH_IT8600", command(context, "ITECH_IT8600").SetLoop("CC"))
+    # context.connections[device(context, "ITECH_IT8600")].write(context.device_class["ITECH_IT8600"].MeasureVoltage("DC"))
+    # print(load.MeasureVoltage("DC"))
+    # print(load.SetParamLevel("Current", 100))
+    # print(load.SetInput("On"))
     # context.connections[context.connected_device.index("Multimeter_Rigol")].write('CONFigure:VOLTage:DC ')
     # DC_value = context.connections[context.connected_device.index("Multimeter_Rigol")].read()
     # print(DC_value)    
+

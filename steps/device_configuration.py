@@ -3,6 +3,6 @@ Devices = {
     "Multimeter_Rigol": None,
     "Yokogawa": None,
     "Chroma": None,
-    "Electronic_Load": None
+    "ITECH_IT8600": "ASRL1::INSTR"
 }
 
