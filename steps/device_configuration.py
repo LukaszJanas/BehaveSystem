@@ -1,8 +1,8 @@
 # Assignment of device addresses
 Devices = {
-    "Multimeter_Rigol": None,
+    "Rigol": "USB0::0x1AB1::0x0C94::DM3O180800170::INSTR",
     "Yokogawa": None,
     "Chroma": None,
-    "ITECH_IT8600": "ASRL1::INSTR"
+    "ITECH_IT8600": None
 }
 

@@ -9,79 +9,42 @@ import tools
 def get_device_index(context, name):
     return context.connected_device.index(name)
 
-def command(context, name):
-    return context.device_class[get_device_index(context, name)]
+def getCmd(context):
+    return context.device_class[get_device_index(context, context.usedDevice)]
 
-def write_msg(context, device_name, command):
-    # context.connections[get_device_index(context, device_name)].write(command)
-    print(command)
+def readMsg(context):
+    return context.connections[get_device_index(context, context.usedDevice)].read()
 
-@step("Ustaw odczyt napięcia stałego dla urządzenia {device}")
-def step_impl(context, device):
-    if device == 'Miernik Rigol':
-        context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["VDC"])
-        DC_value = context.connections[context.connected_device.index("Multimeter_Rigol")].read()
-
+def write_msg(context, cmd):
+    context.connections[get_device_index(context, context.usedDevice)].write(cmd)
+    
 @step("Czekaj {seconds} sekund")
 def step_impl(context, seconds):
     time.sleep(float(seconds))
     
-@step("Skonfiguruj zakres: {range} {unit} dla pomiaru {measurement_type} urządzeniem: {device}")
-def step_impl(context, range, unit, measurement_type, device):
-    if device == 'Miernik Rigol':
-        try:
-            if measurement_type == "VDC":
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["CfgRangeVDC"]+f" {commands.RIGOL_DM3068_DC_voltage_range[range]}")
-            elif measurement_type == "VAC":
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["CfgRangeVAC"]+f" {commands.RIGOL_DM3068_AC_voltage_range[range]}")
-            elif measurement_type == "IDC":
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["CfgRangeIDC"]+f" {commands.RIGOL_DM3068_DC_current_range[range]}")
-            elif measurement_type == "IAC":
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["CfgRangeIAC"]+f" {commands.RIGOL_DM3068_AC_current_range[range]}")
-            elif measurement_type == "R":
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["CfgRangeR"]+f" {commands.RIGOL_DM3068_2W_resistance_range[range]}")
-                
-        except KeyError:
-            print("    !!!!ERROR!!!!")
-            print("    Niepoprawne wartości zakresu!!! Ustawienie zakresu automatycznie")
-            if measurement_type == "VDC":
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["VDC"])
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["CfgMeasType"]+f" AUTO")
-            elif measurement_type == "VAC":
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["VAC"])
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["CfgMeasType"]+f" AUTO")
-            elif measurement_type == "IDC":
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["IDC"])
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["CfgMeasType"]+f" AUTO")
-            elif measurement_type == "IAC":
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["IAC"])
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["CfgMeasType"]+f" AUTO")
-            elif measurement_type == "R":
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["R"])
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["CfgMeasType"]+f" AUTO")
-
 @step("Zmierz wartości: {measurement_type} dla urządzenia: {device} przez {min} min co {sek} sek i zapisz do pliku: {file}")
 def step_impl(context, measurement_type, device, min, sek, file):
     
+    context.usedDevice = device
     time_start = time.time()
     time_end = time_start + int(min) * 60
     
-    if device == 'Miernik Rigol':
+    if device == 'Rigol':
         while time.time() < time_end:
             if measurement_type == "VDC":
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["VDC"])
+                write_msg(context, getCmd(context).MeasureVoltage("DC"))
             elif measurement_type == "VAC":
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["VAC"])
+                write_msg(context, getCmd(context).MeasureVoltage("AC"))
             elif measurement_type == "IDC":
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["IDC"])
+                write_msg(context, getCmd(context).MeasureCurrent("DC"))
             elif measurement_type == "IAC":
-                context.connections[context.connected_device.index("Multimeter_Rigol")].write(commands.RIGOL_DM3068["IAC"])
+                write_msg(context, getCmd(context).MeasureCurrent("AC"))
             
             try:
-                    f_value = float(context.connections[context.connected_device.index("Multimeter_Rigol")].read())
-                    tools.write_to_file(f_value, measurement_type, file)
+                f_value = float(readMsg(context))
+                tools.write_to_file(f_value, measurement_type, file)
             except ValueError:
-                    print("Niepoprawna wartość napięcia.")
+                print("Niepoprawna wartość napięcia.")
                               
             time.sleep(int(sek))
 
@@ -89,28 +52,61 @@ def step_impl(context, measurement_type, device, min, sek, file):
 def step_impl(context, name):
     tools.plot_from_txt_file(name)
 
-@step("Ustaw tryb pomiaru na: {MODE}")
-def step_impl(context, MODE):
-    """
-    Step it is used for setting type of measurement, there is only two way of use this command
-    Mode:
-    AUTO - means that multimeter automaticcaly set the range and resolution for current measurement
-    MANU - means that user should set the range and resolution for current measurement
-
-    """
-    # context.connections[device(context, "Multimeter_Rigol")].write(context.connected_device["Multimeter_Rigol"].MeasureVoltage("DC"))
+@step("Odczytaj prąd: {param} dla urządzenia: {name}")
+def step_impl(context, name: str, param: str):
+    context.usedDevice = name
+    write_msg(context, getCmd(context).MeasureCurrent(param))
+    print(float(readMsg(context)))
     
-@step("Krok testowy")
-def step_impl(context):
-    write_msg(context, "ITECH_IT8600", command(context, "ITECH_IT8600").SetParamLevel("Current", 100))
-    write_msg(context, "ITECH_IT8600", command(context, "ITECH_IT8600").MeasureVoltage("DC"))
-    write_msg(context, "ITECH_IT8600", command(context, "ITECH_IT8600").SetInput("On"))
-    write_msg(context, "ITECH_IT8600", command(context, "ITECH_IT8600").SetLoop("CC"))
-    # context.connections[device(context, "ITECH_IT8600")].write(context.device_class["ITECH_IT8600"].MeasureVoltage("DC"))
-    # print(load.MeasureVoltage("DC"))
-    # print(load.SetParamLevel("Current", 100))
-    # print(load.SetInput("On"))
-    # context.connections[context.connected_device.index("Multimeter_Rigol")].write('CONFigure:VOLTage:DC ')
-    # DC_value = context.connections[context.connected_device.index("Multimeter_Rigol")].read()
-    # print(DC_value)    
+@step("Odczytaj napięcie: {param} dla urządzenia: {name}")
+def step_impl(context, name: str, param: str):
+    context.usedDevice = name
+    write_msg(context, getCmd(context).MeasureVoltage(param))
+    print(float(readMsg(context)))
+    
+@step("Odczytaj rezystancję 2W dla urządzenia: {name}")
+def step_impl(context, name: str):
+    context.usedDevice = name
+    write_msg(context, getCmd(context).MeasureResistance())
+    print(float(readMsg(context)))
+    
+@step("Ustaw zakres napięcia: {type} na: {param}V dla urządzenia Rigol")
+def step_impl(context, type: str, param: str):
+    context.usedDevice = "Rigol"
+    if type == "DC":
+        write_msg(context, getCmd(context).SetMeasureRangeVDC(param))
+    
+    if type == "AC":
+       write_msg(context, getCmd(context).SetMeasureRangeVAC(param))
+       
+@step("Ustaw zakres prądu: {type} na: {param}A dla urządzenia Rigol")
+def step_impl(context, type: str, param: str):
+    context.usedDevice = "Rigol"
+    if type == "DC":
+        write_msg(context, getCmd(context).SetMeasureRangeIDC(param))
+    
+    if type == "AC":
+       write_msg(context, getCmd(context).SetMeasureRangeIAC(param))
 
+@step("Ustaw tryb pomiaru: {type} dla pomiaru: {measurement} dla urządzenia Rigol")
+def step_impl(context, type: str, measurement: str):
+    context.usedDevice = "Rigol"
+    """
+    Step it is used for setting type of measurement, there is only two way of use this cmd
+    Mode:
+        AUTO - means that multimeter automaticcaly set the range and resolution for current measurement
+        MANU - means that user should set the range and resolution for current measurement
+
+    """
+    if measurement == "VDC":
+        write_msg(context, getCmd(context).MeasureVoltage("DC"))
+    if measurement == "VAC":
+        write_msg(context, getCmd(context).MeasureVoltage("AC"))
+    if measurement == "IDC":
+        write_msg(context, getCmd(context).MeasureCurrent("DC"))
+    if measurement == "IAC":
+        write_msg(context, getCmd(context).MeasureCurrent("AC"))
+    if measurement == "R2W":
+        write_msg(context, getCmd(context).MeasureResistance())
+    
+    write_msg(context, getCmd(context).SetMeasurementType(type))

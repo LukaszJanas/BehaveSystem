@@ -135,6 +135,18 @@ def AddPrefixIfNeeded(command, prefix):
 
 class ScpiCommand:
     
+    PARAM = {
+        "Current" : "CURRent",
+        "Resistance" : "RESistance",
+        "Power" : "POWer",
+        "Voltage": "VOLTage"
+        }
+    
+    TYPE = {
+        "DC" : "DC",
+        "AC" : "AC"
+    }
+    
     def __init__(self, usePrefix = True):
         self.usePrefix = usePrefix
     
@@ -154,13 +166,6 @@ class ITECH_IT8600(ScpiCommand):
     
     def __init__(self, usePrefix):
         super().__init__(usePrefix)
-        
-        self.PARAM = {
-            "Current" : "CURRent",
-            "Resistance" : "RESistance",
-            "Power" : "POWer",
-            "Voltage": "VOLTage"
-        }
         
         self.STATE = {
             "On" : "ON",
@@ -184,7 +189,79 @@ class ITECH_IT8600(ScpiCommand):
     
     def SetParamLevel(self, param, level):
         return f":SOURce:{self.PARAM.get(param, 'CURRent')}:LEVel {str(level)}"
+    
+class Rigol(ScpiCommand):
+    
+    RangeVDC = {
+        "0.2":  0,  #0 - Range = 200mV and Resolution = 100nV
+        "2":    1,  #1 - Range = 2V and Resolution = 1uV
+        "20":   2,  #2 - Range = 20V and Resolution = 10uV
+        "200":  3,  #3 - Range = 200V and Resolution = 100uV
+        "1000": 4,  #4 - Range = 1000V and Resolution = 100mV
+    }
 
+    RangeVAC = {
+        "0.2":  0,  #0 - Range = 200mV
+        "2":    1,  #1 - Range = 2V
+        "20":   2,  #2 - Range = 20V
+        "200":  3,  #3 - Range = 200V
+        "750":  4,  #4 - Range = 750V
+    }
+
+    RangeIDC = {
+        "0.0002":  0,  #0 - Range = 200uA and Resolution = 1nA
+        "0.002":   1,  #1 - Range = 2mA and Resolution = 10nA
+        "0.02":    2,  #2 - Range = 20mA and Resolution = 100nA
+        "0.2":     3,  #3 - Range = 200mA and Resolution = 1uA
+        "2":       4,  #4 - Range = 2A and Resolution = 10uA
+        "10":      5,  #5 - Range = 10A and Resolution = 100 uA
+    }
+
+    RangeIAC = {
+        "0.02":  0,  #0 - Range = 20mA
+        "0.2":   1,  #1 - Range = 200mA
+        "2":     2,  #2 - Range = 2A
+        "10":    3,  #3 - Range = 10A
+    }
+
+    Range2W = {
+        "200"   :  0,  #0 - Range = 200 Ohm
+        "2000"  :  1,  #1 - Range = 2 kOhm
+        "2e+4"  :  2,  #2 - Range = 20 kOhm
+        "20e+4" :  3,  #3 - Range = 200 kOhm
+        "1e+6"  :  4,  #0 - Range = 1 MOhm
+        "10e+6" :  5,  #1 - Range = 10 MOhm
+        "100e+6":  6   #2 - Range = 100 MOhm
+    }
+    
+    MeasureType = {
+        "Automatic" : "AUTO",
+        "Manual" : "MANU"
+    }
+    
+    def __init__(self, usePrefix):
+        super().__init__(usePrefix)
+    
+    def SetMeasureRangeVDC(self, value):
+        return f":MEASure:VOLTage:DC {self.RangeVDC.get(value, '4')}"
+    
+    def SetMeasureRangeVAC(self, value):
+        return f":MEASure:VOLTage:AC {self.RangeVAC.get(value, '4')}"
+    
+    def SetMeasureRangeIDC(self, value):
+        return f":MEASure:CURRent:DC {self.RangeIDC.get(value, '5')}"
+    
+    def SetMeasureRangeIAC(self, value):
+        return f":MEASure:CURRent:AC {self.RangeIDC.get(value, '3')}"
+    
+    def SetMeasureRangeR2W(self, value):
+        return f":MEASure:RESistance {self.Range2W.get(value, '6')}"
+    
+    def SetMeasurementType(self, type):
+        return f":MEASure {self.MeasureType.get(type, 'AUTO')}"
+    
 def ClassCreator(object_name):
     if object_name == "ITECH_IT8600":
         return ITECH_IT8600(usePrefix = True)
+    if object_name == "Rigol":
+        return Rigol(usePrefix = True)
