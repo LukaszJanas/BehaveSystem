@@ -1,4 +1,4 @@
-'''
+"""
 
 There are included a useful tools/functions which are necessary for performed a steps for tests.
 
@@ -6,13 +6,14 @@ Developed by:
 Inż. Janas Łukasz
 
 Last changes:
-14.05.2023 
+17.07.2023 
 
-'''
+"""
 
 import time
 import matplotlib.pyplot as plt
 import datetime
+from behave import *
 
 def check_if_file_is_empty(name="results.txt"):
     try:
@@ -53,3 +54,11 @@ def plot_from_txt_file(name="results.txt"):
     plt.tight_layout()
     plt.grid()
     plt.show()
+    
+def write_log(log, name):
+    if check_if_file_is_empty(name):
+        with open(name, 'a') as file:
+            file.write(f'Start Logging\n')
+    
+    with open(name, 'a') as file:
+        file.write(f'{time.strftime("%Y-%m-%d %H:%M:%S")}\t\t\t{log}\n')

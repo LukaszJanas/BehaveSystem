@@ -1,0 +1,11 @@
+Start Logging
+2023-07-20 18:09:58			Device: Itech -> Load method set to: ConstantPower
+2023-07-20 18:09:58			Device: Itech -> Parameter: Power set to value: 1500
+2023-07-20 18:10:00			Device: Chroma -> AC voltage amplitude: 210 for phase A is set
+2023-07-20 18:10:01			Device: Chroma -> AC voltage amplitude: 220 for phase B is set
+2023-07-20 18:10:03			Device: Chroma -> AC voltage amplitude: 230 for phase C is set
+2023-07-20 18:10:03			Device: Itech -> Turn On device
+2023-07-20 18:10:04			Device: System -> Wait time: 1s
+2023-07-20 18:10:05			Device: Chroma -> Turn On device
+2023-07-20 18:10:35			Device: System -> Wait time: 30s
+2023-07-20 18:10:36			Device: Chroma -> 3-phase real power: 487.679779 W

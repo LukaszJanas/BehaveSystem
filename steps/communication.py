@@ -1,3 +1,15 @@
+"""
+
+The file contains functionalities related to creating a connection or closing a connection with assigned measuring devices
+
+Developed by:
+Inż. Janas Łukasz
+
+Last changes:
+17.07.2023
+
+"""
+
 import SCPI_commands as command
 # connect all devices declared in dictionary
 def devices_connect(resource_manager, device_dict):
@@ -23,4 +35,3 @@ def devices_disconnect(connections):
     if connections:
         for i in range(len(connections)):
             connections[i].close()
-            connections.remove(connections[i])
